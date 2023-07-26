@@ -1,5 +1,5 @@
-// Makefile for building around Armbian and Xuantie-Ubuntu repos...
-// W/ help from https://makefiletutorial.com/
+# Makefile for building around Armbian and Xuantie-Ubuntu repos...
+# W/ help from https://makefiletutorial.com/
 
 files:=	FILENAME FILENAMEONE FILENAMETWO FILENAMETHREE FILENAMEFOUR FILENAMEFIVE
 YES:	$(files)
