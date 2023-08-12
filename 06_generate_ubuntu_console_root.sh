@@ -8,13 +8,23 @@ fi
 
 wdir=`pwd`
 
-image="2023-07-23"
+if [ -f /tmp/latest ] ; then
+	rm -rf /tmp/latest | true
+fi
+wget --quiet --directory-prefix=/tmp/ https://rcn-ee.net/rootfs/ubuntu-riscv64-23.04-minimal/latest || true
+if [ -f /tmp/latest ] ; then
+	latest_rootfs=$(cat "/tmp/latest")
+	datestamp=$(cat "/tmp/latest" | awk -F 'riscv64-' '{print $2}' | awk -F '.' '{print $1}')
 
-if [ ! -f ./deploy/ubuntu-23.04-console-riscv64-${image}/riscv64-rootfs-ubuntu-lunar.tar ] ; then
-	wget -c --directory-prefix=./deploy https://rcn-ee.net/rootfs/ubuntu-riscv64-23.04-minimal/${image}/ubuntu-23.04-console-riscv64-${image}.tar.xz
-	cd ./deploy/
-	tar xf ubuntu-23.04-console-riscv64-${image}.tar.xz
-	cd ../
+	if [ ! -f ./deploy/ubuntu-23.04-console-riscv64-${datestamp}/riscv64-rootfs-ubuntu-lunar.tar ] ; then
+		wget -c --directory-prefix=./deploy https://rcn-ee.net/rootfs/ubuntu-riscv64-23.04-minimal/${datestamp}/${latest_rootfs}
+		cd ./deploy/
+		tar xf ${latest_rootfs}
+		cd ../
+	fi
+else
+	echo "Failure: getting image"
+	exit 2
 fi
 
 if [ -d ./ignore/.root ] ; then
@@ -22,7 +32,7 @@ if [ -d ./ignore/.root ] ; then
 fi
 mkdir -p ./ignore/.root
 
-tar xfp ./deploy/ubuntu-23.04-console-riscv64-${image}/riscv64-rootfs-ubuntu-lunar.tar -C ./ignore/.root
+tar xfp ./deploy/ubuntu-23.04-console-riscv64-${datestamp}/riscv64-rootfs-ubuntu-lunar.tar -C ./ignore/.root
 sync
 
 mkdir -p ./ignore/.root/boot/firmware/ || true
@@ -30,6 +40,13 @@ mkdir -p ./ignore/.root/boot/firmware/ || true
 echo '/dev/mmcblk0p2  /boot/firmware/ auto  defaults  0  2' >> ./ignore/.root/etc/fstab
 echo '/dev/mmcblk0p3  /  auto  errors=remount-ro  0  1' >> ./ignore/.root/etc/fstab
 echo 'debugfs  /sys/kernel/debug  debugfs  mode=755,uid=root,gid=gpio,defaults  0  0' >> ./ignore/.root/etc/fstab
+
+rm -rf ./ignore/.root/usr/lib/systemd/system/snapd.service || true
+
+rm -rf ./ignore/.root/usr/lib/systemd/system/bb-usb-gadgets.service || true
+rm -rf ./ignore/.root/etc/systemd/system/getty.target.wants/serial-getty@ttyGS0.service || true
+rm -rf ./ignore/.root/etc/systemd/network/usb0.network || true
+rm -rf ./ignore/.root/etc/systemd/network/usb1.network || true
 
 rm -rf ./ignore/.root/usr/lib/systemd/system/grow_partition.service || true
 cd ./ignore/.root/
@@ -62,8 +79,6 @@ cp -v ./bins/ap6203/* ./ignore/.root/lib/firmware/ || true
 
 mkdir -p ./ignore/.root/usr/lib/firmware/brcm/ || true
 cp -v bins/BCM43013A0_001.001.006.1073.1102.hcd ./ignore/.root/usr/lib/firmware/brcm/BCM43013A0.hcd
-
-#cp -v ./light-images-proprietary/gpu_bxm_4_64/lib/firmware/* ./ignore/.root/usr/lib/firmware/ || true
 
 # setuid root ping+ping6
 chmod u+s ./ignore/.root/usr/bin/ping ./ignore/.root/usr/bin/ping6

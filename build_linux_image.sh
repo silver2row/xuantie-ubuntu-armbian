@@ -1,16 +1,18 @@
 #!/bin/bash
 
 CORES=$(getconf _NPROCESSORS_ONLN)
-
 wdir=`pwd`
-
-CC=${wdir}/riscv-toolchain/bin/riscv64-unknown-linux-gnu-
+CC=${CC:-"${wdir}/riscv-toolchain/bin/riscv64-linux-"}
 
 cd ./linux/
 cp -rv ../BeagleBoard-DeviceTrees/src/thead/*.dts ./arch/riscv/boot/dts/thead/
-echo "# SPDX-License-Identifier: GPL-2.0" > arch/riscv/boot/dts/thead/Makefile
-echo "dtb-\$(CONFIG_ARCH_THEAD) += th1520-lichee-pi-4a.dtb" >> arch/riscv/boot/dts/thead/Makefile
-echo "dtb-\$(CONFIG_ARCH_THEAD) += th1520-beaglev-ahead.dtb" >> arch/riscv/boot/dts/thead/Makefile
+
+#if [ ! -d ./arch/riscv/boot/dts/thead/overlays/ ] ; then
+#	mkdir -p ./arch/riscv/boot/dts/thead/overlays/
+#fi
+#cp -rv ../BeagleBoard-DeviceTrees/src/thead/overlays/*.dts ./arch/riscv/boot/dts/thead/overlays/
+
+git diff > log.txt ; cat log.txt ; rm log.txt
 
 cd ../BeagleBoard-DeviceTrees/
 make clean ; make
