@@ -5,6 +5,7 @@ wdir=`pwd`
 CC=${CC:-"${wdir}/riscv-toolchain/bin/riscv64-linux-"}
 
 cd ./linux/
+cp -rv ../BeagleBoard-DeviceTrees/src/thead/*.dtsi ./arch/riscv/boot/dts/thead/
 cp -rv ../BeagleBoard-DeviceTrees/src/thead/*.dts ./arch/riscv/boot/dts/thead/
 
 #if [ ! -d ./arch/riscv/boot/dts/thead/overlays/ ] ; then
@@ -18,10 +19,27 @@ cd ../BeagleBoard-DeviceTrees/
 make clean ; make
 cd ../linux
 
+echo "make ARCH=riscv CROSS_COMPILE=${CC} clean"
 make ARCH=riscv CROSS_COMPILE=${CC} clean
+
+echo "make ARCH=riscv CROSS_COMPILE=${CC} defconfig"
 make ARCH=riscv CROSS_COMPILE=${CC} defconfig
+
 ./scripts/config --enable CONFIG_OF_OVERLAY
 ./scripts/config --enable CONFIG_MMC_SDHCI_OF_DWCMSHC
+
+./scripts/config --enable CONFIG_DWMAC_THEAD
+
+#Cleanup large DRM...
+./scripts/config --disable CONFIG_DRM
+
+#Optimize:
+./scripts/config --enable CONFIG_IP_NF_IPTABLES
+./scripts/config --enable CONFIG_NETFILTER_XTABLES
+
+echo "make -j${CORES} ARCH=riscv CROSS_COMPILE=${CC} olddefconfig"
+make -j${CORES} ARCH=riscv CROSS_COMPILE=${CC} olddefconfig
+
 echo "make -j${CORES} ARCH=riscv CROSS_COMPILE=${CC} Image modules dtbs"
 make -j${CORES} ARCH=riscv CROSS_COMPILE=${CC} Image modules dtbs
 
