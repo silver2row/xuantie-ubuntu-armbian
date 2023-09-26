@@ -17,7 +17,11 @@ if [ -f /tmp/latest ] ; then
 	datestamp=$(cat "/tmp/latest" | awk -F 'riscv64-' '{print $2}' | awk -F '.' '{print $1}')
 
 	if [ ! -f ./deploy/ubuntu-23.04-xfce-riscv64-${datestamp}/riscv64-rootfs-ubuntu-lunar.tar ] ; then
-		wget -c --directory-prefix=./deploy https://rcn-ee.net/rootfs/ubuntu-riscv64-23.04-xfce/${datestamp}/${latest_rootfs}
+		if [ -f ./.gitlab-runner ] ; then
+			wget -c --directory-prefix=./deploy http://192.168.1.98/rcn-ee.us/rootfs/ubuntu-riscv64-23.04-xfce/${datestamp}/${latest_rootfs}
+		else
+			wget -c --directory-prefix=./deploy https://rcn-ee.net/rootfs/ubuntu-riscv64-23.04-xfce/${datestamp}/${latest_rootfs}
+		fi
 		cd ./deploy/
 		tar xf ${latest_rootfs}
 		cd ../
@@ -32,6 +36,7 @@ if [ -d ./ignore/.root ] ; then
 fi
 mkdir -p ./ignore/.root
 
+echo "Extracting: ubuntu-23.04-xfce-riscv64-${datestamp}/riscv64-rootfs-ubuntu-lunar.tar"
 tar xfp ./deploy/ubuntu-23.04-xfce-riscv64-${datestamp}/riscv64-rootfs-ubuntu-lunar.tar -C ./ignore/.root
 sync
 
@@ -43,6 +48,7 @@ echo 'debugfs  /sys/kernel/debug  debugfs  mode=755,uid=root,gid=gpio,defaults  
 
 rm -rf ./ignore/.root/usr/lib/systemd/system/snapd.service || true
 
+#No USB support yet...
 rm -rf ./ignore/.root/usr/lib/systemd/system/bb-usb-gadgets.service || true
 rm -rf ./ignore/.root/etc/systemd/system/getty.target.wants/serial-getty@ttyGS0.service || true
 rm -rf ./ignore/.root/etc/systemd/network/usb0.network || true
@@ -52,12 +58,6 @@ rm -rf ./ignore/.root/usr/lib/systemd/system/grow_partition.service || true
 cd ./ignore/.root/
 ln -L -f -s -v /lib/systemd/system/resize_filesystem.service --target-directory=./etc/systemd/system/multi-user.target.wants/
 cd ../../
-
-cp -v ./ignore/.root/etc/bbb.io/templates/eth0-DHCP.network ./ignore/.root/etc/systemd/network/eth0.network || true
-
-if [ -f ./ignore/.root/etc/systemd/system/multi-user.target.wants/wpa_supplicant@wlan0.service ] ; then
-	rm -rf ./ignore/.root/etc/systemd/system/multi-user.target.wants/wpa_supplicant@wlan0.service || true
-fi
 
 #Cleanup large firmware's..
 rm -rf ./ignore/.root/usr/lib/firmware/amdgpu/ || true
