@@ -5,8 +5,8 @@ wdir=`pwd`
 CC=${CC:-"${wdir}/riscv-toolchain/bin/riscv64-linux-"}
 
 cd ./linux/
-cp -rv ../BeagleBoard-DeviceTrees/src/thead/*.dtsi ./arch/riscv/boot/dts/thead/
-cp -rv ../BeagleBoard-DeviceTrees/src/thead/*.dts ./arch/riscv/boot/dts/thead/
+cp -rv ../BeagleBoard-DeviceTrees/src/riscv/thead/*.dtsi ./arch/riscv/boot/dts/thead/
+cp -rv ../BeagleBoard-DeviceTrees/src/riscv/thead/*.dts ./arch/riscv/boot/dts/thead/
 
 #if [ ! -d ./arch/riscv/boot/dts/thead/overlays/ ] ; then
 #	mkdir -p ./arch/riscv/boot/dts/thead/overlays/
@@ -36,8 +36,8 @@ make ARCH=riscv CROSS_COMPILE=${CC} defconfig
 ./scripts/config --disable CONFIG_ARCH_R9A07G043
 #CONFIG_DMA_GLOBAL_POOL breaks ADMA
 
-#TH1520 PHY
-./scripts/config --enable CONFIG_DWMAC_THEAD
+#TH1520 RESET
+./scripts/config --enable CONFIG_RESET_TH1520
 
 #Cleanup large PCI/DRM...
 ./scripts/config --disable CONFIG_PCI
@@ -56,6 +56,7 @@ make ARCH=riscv CROSS_COMPILE=${CC} defconfig
 ./scripts/config --enable CONFIG_CRYPTO_MD4
 ./scripts/config --enable CONFIG_CRYPTO_MD5
 ./scripts/config --enable CONFIG_CRYPTO_CBC
+./scripts/config --enable CONFIG_CRYPTO_SHA1
 ./scripts/config --enable CONFIG_CRYPTO_SHA256
 ./scripts/config --enable CONFIG_CRYPTO_SHA512
 ./scripts/config --enable CONFIG_CRYPTO_AES
@@ -103,7 +104,7 @@ tar --create --gzip --file "../${KERNEL_UTS}-modules.tar.gz" ./*
 cd "${wdir}/linux/" || exit
 rm -rf "${wdir}/deploy/tmp" || true
 
-cp -v ./arch/riscv/boot/dts/thead/th1520-beaglev-ahead.dts ../BeagleBoard-DeviceTrees/src/thead/
+cp -v ./arch/riscv/boot/dts/thead/th1520-beaglev-ahead.dts ../BeagleBoard-DeviceTrees/src/riscv/thead/
 cp -v ./.config ../patches/linux/beaglev_defconfig
 cp -v ./arch/riscv/boot/Image ../deploy/
 cp -v ./arch/riscv/boot/dts/thead/*.dtb ../deploy/
