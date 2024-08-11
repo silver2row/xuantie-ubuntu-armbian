@@ -29,6 +29,7 @@ make ARCH=riscv CROSS_COMPILE=${CC} defconfig
 ./scripts/config --set-str CONFIG_LOCALVERSION "-$(date +%Y%m%d)"
 
 ./scripts/config --enable CONFIG_OF_OVERLAY
+./scripts/config --enable CONFIG_MODULE_COMPRESS_ZSTD
 
 #TH1520 MMC
 ./scripts/config --enable CONFIG_MMC_SDHCI_OF_DWCMSHC
@@ -38,6 +39,10 @@ make ARCH=riscv CROSS_COMPILE=${CC} defconfig
 
 #TH1520 RESET
 ./scripts/config --enable CONFIG_RESET_TH1520
+
+#GPIO:
+./scripts/config --enable CONFIG_GPIO_SYSFS
+./scripts/config --enable CONFIG_GPIO_DWAPB
 
 #Cleanup large PCI/DRM...
 ./scripts/config --disable CONFIG_PCI
